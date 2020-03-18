@@ -21,7 +21,7 @@ namespace worker_log
         {
             _logger = logger;
             _companies = new List<CompanyEntitity>();
-            mockCompanies();
+            MockCompanies();
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -30,16 +30,20 @@ namespace worker_log
             {
                 _logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
 
-
-                foreach (var company in _companies)
-                {
-                    var ping = IsConectedToHost(company.Uri);
-                    var strStatus = ping == true ? "Okay" : "Problem";
-                    var timeNow = DateTimeOffset.Now;
-                    _logger.LogInformation($"{strStatus} with {company.Name} on: {timeNow}");
-                }
+                validatesAccessToUri();
 
                 await Task.Delay(10000, stoppingToken);
+            }
+        }
+
+        private void validatesAccessToUri()
+        {
+            foreach (var company in _companies)
+            {
+                var ping = IsConectedToHost(company.Uri);
+                var strStatus = ping ? "Okay" : "Problem";
+                var timeNow = DateTimeOffset.Now;
+                _logger.LogInformation($"{strStatus} with {company.Name} on: {timeNow}");
             }
         }
 
@@ -56,13 +60,12 @@ namespace worker_log
             }
         }
 
-        private void mockCompanies()
+        private void MockCompanies()
         {
             _companies.Add(new CompanyEntitity("Google", "http://google.com"));
             _companies.Add(new CompanyEntitity("Interisk Site", "https://www.brasiliano.com.br/"));
             _companies.Add(new CompanyEntitity("Interisk Dashboard", "http://google.com"));
             _companies.Add(new CompanyEntitity("Namespace", "http://namespace.net.br"));
-
         }
     }
 }
